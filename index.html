@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MSK TRADERS – Rice Orders</title>
+  <style>
+    :root {
+      --clr-bg: #f9f9f9;
+      --clr-surface: #fff;
+      --clr-primary: #2d6a4f;
+      --clr-secondary: #74c69d;
+      --clr-text: #111;
+    }
+    * { box-sizing: border-box }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--clr-bg);
+      color: var(--clr-text);
+    }
+    header {
+      background: var(--clr-primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 1rem 2rem;
+    }
+    header img { height: 3rem }
+    .company-name {
+      font-size: 1.5rem;
+      margin-left: 1rem;
+      font-weight: bold;
+    }
+    .welcome {
+      background: linear-gradient(
+        to right,
+        var(--clr-primary),
+        var(--clr-secondary)
+      );
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: var(--clr-surface);
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    }
+    .container-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .item {
+      background: var(--clr-bg);
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .item img {
+      width: 100%;
+      height: 130px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+    }
+    .item span {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .item button {
+      background: var(--clr-primary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .item button:hover {
+      background: var(--clr-secondary);
+    }
+    .cart-btn-inline {
+      background: var(--clr-surface);
+      color: var(--clr-primary);
+      border: 2px solid var(--clr-primary);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+    .cart-btn-inline:hover {
+      background: var(--clr-primary);
+      color: white;
+    }
+    .cart-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      background: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+      z-index: 99;
+    }
+    .cart-window {
+      background: white;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 1rem;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.6rem 0;
+    }
+    .cart-item button {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: var(--clr-primary);
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    input,
+    textarea {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .submit-btn {
+      width: 100%;
+      margin-top: 1rem;
+      background: var(--clr-primary);
+      color: white;
+      padding: 0.75rem;
+      border: none;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .submit-btn:hover {
+      background: var(--clr-secondary);
+    }
+    .total {
+      text-align: right;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    #paymentSection {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    #paymentSection img {
+      width: 300px;
+      margin-bottom: 1rem;
+    }
+    .popup {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--clr-primary);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 1rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.4s ease;
+      z-index: 999;
+    }
+    .popup.show {
+      opacity: 1;
+      visibility: visible;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="images/logo.png" alt="Logo">
+    <div class="company-name">MSK TRADERS</div>
+  </header>
+
+  <div class="welcome">Welcome to MSK Traders Rice Order Platform</div>
+
+  <div class="container" id="items">
+    <div class="container-header">
+      <h2>Select Rice Items</h2>
+      <button class="cart-btn-inline" onclick="toggleCart()">🛒 Cart</button>
+    </div>
+    <div class="grid" id="itemGrid"></div>
+  </div>
+
+  <div class="cart-overlay" id="cartOverlay">
+    <div class="cart-window">
+      <h3>Your Cart</h3>
+      <div id="cartItems"></div>
+      <div class="total" id="cartTotal">Total: ₹0</div>
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="tel" id="mobile" placeholder="Mobile Number" required>
+      <textarea id="address" placeholder="Address" required></textarea>
+      <button class="submit-btn" onclick="submitOrder()">Proceed to Pay</button>
+
+      <div id="paymentSection">
+        <h3 id="payText"></h3>
+        <img id="qrImg" src="images/loading.gif" alt="QR code">
+        <p id="paymentStatus">Waiting for payment...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="popup" class="popup">Item added to cart ✅</div>
+
+  <script>
+    const SCRIPT_URL = 
+      'https://script.google.com/macros/s/' +
+      'AKfycbz73u-ju2Ys9eqElggK5puYiPpaqs2jaCFKRnHdV_A5vITZDnAtYHDD5O76bbkTVTVM' +
+      '/exec';
+
+    const items = [
+      { name: 'Sona Masoori', price: 1200, image: 'images/sona.jpg' },
+      { name: 'Basmati Rice', price: 1800, image: 'images/basmati.jpg' },
+      { name: 'Red Rice', price: 1400, image: 'images/red.jpg' },
+      { name: 'Steam Rice', price: 1250, image: 'images/steam.jpg' },
+      { name: 'Kolam Rice', price: 1100, image: 'images/kolam.jpg' },
+      { name: 'Jeera Rice', price: 1600, image: 'images/jeera.jpg' },
+      { name: 'Matta Rice', price: 1300, image: 'images/matta.jpg' },
+      { name: 'Brown Rice', price: 1500, image: 'images/brown.jpg' },
+      { name: 'Ponni Rice', price: 1450, image: 'images/ponni.jpg' }
+    ];
+
+    const cart = {};
+
+    // Render products
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML = `
+        <img src="${item.image}" alt="${item.name}">
+        <span>${item.name} ₹${item.price}</span>
+        <button onclick="addToCart('${item.name}', ${item.price})">
+          Add to Cart
+        </button>`;
+      document.getElementById('itemGrid').appendChild(el);
+    });
+
+    function toggleCart() {
+      const overlay = document.getElementById('cartOverlay');
+      overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function showPopup(msg) {
+      const popup = document.getElementById('popup');
+      popup.innerText = msg;
+      popup.classList.add('show');
+      setTimeout(() => popup.classList.remove('show'), 2000);
+    }
+
+    function addToCart(name, price) {
+      if (!cart[name]) cart[name] = { qty: 1, price };
+      else cart[name].qty++;
+      updateCart();
+      showPopup(`${name} added to cart ✅`);
+    }
+
+    function changeQty(item, delta) {
+      cart[item].qty += delta;
+      if (cart[item].qty < 1) delete cart[item];
+      updateCart();
+    }
+
+    function updateCart() {
+      const container = document.getElementById('cartItems');
+      container.innerHTML = '';
+      let total = 0;
+      for (let key in cart) {
+        const { qty, price } = cart[key];
+        total += qty * price;
+        container.innerHTML += `
+          <div class="cart-item">
+            <span>${key} ×${qty}</span>
+            <div>
+              <button onclick="changeQty('${key}', -1)">−</button>
+              <button onclick="changeQty('${key}', 1)">+</button>
+            </div>
+          </div>`;
+      }
+      document.getElementById('cartTotal').innerText = 'Total: ₹' + total;
+    }
+
+    function submitOrder() {
+      const name    = document.getElementById('name').value.trim();
+      const mobile  = document.getElementById('mobile').value.trim();
+      const address = document.getElementById('address').value.trim();
+      if (!name || !mobile || !address) {
+        return alert('Please fill in all fields.');
+      }
+
+      const orderList = Object.entries(cart)
+        .map(([k,v]) => `${k}×${v.qty}`)
+        .join(', ');
+      const totalVal = parseInt(
+        document.getElementById('cartTotal')
+                .innerText.replace('Total: ₹', '')
+      );
+      const withFee = Math.round(totalVal * 1.02);
+
+      // Show payment UI
+      document.getElementById('paymentSection').style.display = 'block';
+      document.getElementById('payText').innerText = `Pay ₹${withFee}`;
+      document.getElementById('qrImg').src = 'images/loading.gif';
+      document.getElementById('paymentStatus').innerText = 'Waiting for payment...';
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name, mobile, address,
+          order: orderList,
+          total: totalVal,
+          pay: withFee
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('qrImg').src = data.qr;
+        const poll = setInterval(() => {
+          fetch(`${SCRIPT_URL}?verify=${data.id}`)
+            .then(r => r.json())
+            .then(resp => {
+              if (resp.status === 'paid') {
+                clearInterval(poll);
+                document.getElementById('qrImg').style.display = 'none';
+                document.getElementById('payText').innerText = '✅ Payment Received!';
+                document.getElementById('paymentStatus').innerHTML = `
+                  <strong>Bill:</strong><br><pre>${data.bill}</pre>
+                  <p>📸 Please screenshot this bill.</p>`;
+              }
+            });
+        }, 4000);
+      })
+      .catch(() => alert('Failed to initialize payment.'));
+    }
+
+    // Close cart on Escape or outside click
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') toggleCart();
+    });
+    document.getElementById('cartOverlay').addEventListener('click', e => {
+      if (e.target.id === 'cartOverlay') toggleCart();
+    });
+  </script>
+</body>
+</html>
